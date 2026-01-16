@@ -10,6 +10,7 @@ export const createSupabaseServerClient = async () => {
     {
       cookies: {
         get(name: string) {
+            //  console.log("SUPABASE WANTS COOKIE:", name);
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options?: any) {

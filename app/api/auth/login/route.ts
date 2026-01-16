@@ -12,6 +12,12 @@ export async function POST(req: Request) {
       email,
       password,
     });
+    
+const accessToken = data.session?.access_token;
+const refreshToken = data.session?.refresh_token;
+console.log("access token", accessToken)
+console.log("refresh token", refreshToken)
+
 
     if (error || !data.user) {
       return NextResponse.json(
