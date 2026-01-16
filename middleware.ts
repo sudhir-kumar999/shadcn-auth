@@ -46,7 +46,12 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  /* ================= BAN CHECK (EXISTING LOGIC) ================= */
+  /* ================= NOT LOGGED IN (MOVE UP & RETURN EARLY) ================= */
+  if (!user && pathname.startsWith("/admin")) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  /* ================= LOGGED IN USER ================= */
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -54,7 +59,7 @@ export async function middleware(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    // 🔴 BANNED USER → FORCE LOGOUT
+    /* ===== BANNED USER ===== */
     if (profile?.is_banned) {
       await supabase.auth.signOut();
       return NextResponse.redirect(
@@ -62,36 +67,16 @@ export async function middleware(request: NextRequest) {
       );
     }
 
-    /* ================= ADMIN ROUTE GUARD ================= */
+    /* ===== ADMIN / SUPERADMIN GUARD ===== */
     if (pathname.startsWith("/admin")) {
       if (profile?.role !== "admin" && profile?.role !== "superadmin") {
+        // 🔥 IMPORTANT FIX: redirect to profile, NOT login
         return NextResponse.redirect(
-          new URL("/profile", request.url)
+          new URL("/dashboard", request.url)
         );
       }
     }
   }
 
-  /* ================= NOT LOGGED IN ================= */
-  if (!user && pathname.startsWith("/admin")) {
-    return NextResponse.redirect(
-      new URL("/login", request.url)
-    );
-  }
-
   return response;
 }
-
-/* ================= MATCHER ================= */
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico
-     * - public assets
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
-};
