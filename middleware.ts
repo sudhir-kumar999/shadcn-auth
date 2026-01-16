@@ -39,35 +39,58 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  const pathname = request.nextUrl.pathname;
+
+  /* ================= AUTH USER ================= */
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Check if user is banned
+  /* ================= BAN CHECK (EXISTING LOGIC) ================= */
   if (user) {
     const { data: profile } = await supabase
-      .from("profiles") // ya tumhara table name
-      .select("is_banned")
+      .from("profiles")
+      .select("is_banned, role")
       .eq("id", user.id)
       .single();
 
+    // 🔴 BANNED USER → FORCE LOGOUT
     if (profile?.is_banned) {
       await supabase.auth.signOut();
-      return NextResponse.redirect(new URL("/auth/login?error=banned", request.url));
+      return NextResponse.redirect(
+        new URL("/login?error=banned", request.url)
+      );
     }
+
+    /* ================= ADMIN ROUTE GUARD ================= */
+    if (pathname.startsWith("/admin")) {
+      if (profile?.role !== "admin" && profile?.role !== "superadmin") {
+        return NextResponse.redirect(
+          new URL("/profile", request.url)
+        );
+      }
+    }
+  }
+
+  /* ================= NOT LOGGED IN ================= */
+  if (!user && pathname.startsWith("/admin")) {
+    return NextResponse.redirect(
+      new URL("/login", request.url)
+    );
   }
 
   return response;
 }
 
+/* ================= MATCHER ================= */
 export const config = {
   matcher: [
     /*
      * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files
+     * - favicon.ico
+     * - public assets
      */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
