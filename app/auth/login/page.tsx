@@ -41,7 +41,8 @@ export default function LoginPage() {
       } else if (role === "admin") {
         window.location.href = "/admin";
       } else {
-        window.location.href = "/todo";
+        // User role ko dashboard pe redirect karo
+        window.location.href = "/dashboard";
       }
     } catch (err: any) {
       setError(

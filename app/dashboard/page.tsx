@@ -112,7 +112,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* Stats Card */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4">
+            {/* <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-2xl sm:text-3xl font-bold text-blue-600">✓</p>
                 <p className="text-xs sm:text-sm text-gray-600 mt-1">Active</p>
@@ -127,7 +127,7 @@ export default async function DashboardPage() {
                 <p className="text-2xl sm:text-3xl font-bold text-purple-600">🎯</p>
                 <p className="text-xs sm:text-sm text-gray-600 mt-1">Ready</p>
               </div>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 
