@@ -23,7 +23,7 @@ export default async function TodoPage() {
     <div className="flex justify-center pt-10">
       <TodoClient
         initialTodos={todos || []}
-        userId={data.user.id}
+        // userId={data.user.id}
       />
     </div>
   );

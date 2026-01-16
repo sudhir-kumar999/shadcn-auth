@@ -20,10 +20,13 @@ type Todo = {
   id: string;
   title: string;
   completed: boolean;
+  user_id: string;
+  
 };
 
 export default function TodoClient({
   initialTodos,
+  
 }: {
   initialTodos: Todo[];
 }) {
