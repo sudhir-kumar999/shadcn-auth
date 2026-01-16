@@ -2,18 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, X, Check, Loader2, Shield, User } from "lucide-react";
+import { Pencil, Trash2, X, Check, Loader2, Shield, User, Ban, Unlock } from "lucide-react";
 
 type User = {
   id: string;
   name: string;
   email: string;
   role: string;
+  is_banned: boolean;
   created_at: string;
 };
 
@@ -48,25 +50,20 @@ export default function AdminPage() {
       setLoading(true);
       
       const [usersRes, todosRes] = await Promise.all([
-        fetch("/api/admin/users"),
-        fetch("/api/admin/todos"),
+        axios.get("/api/admin/users"),
+        axios.get("/api/admin/todos"),
       ]);
 
-      if (!usersRes.ok || !todosRes.ok) {
-        router.push("/todo");
-        return;
-      }
-
-      const usersData = await usersRes.json();
-      const todosData = await todosRes.json();
-
-      setUsers(usersData.users || []);
-      setTodos(todosData.todos || []);
+      setUsers(usersRes.data.users || []);
+      setTodos(todosRes.data.todos || []);
 
       // Get current user role
-      const currentUser = usersData.users.find((u: User) => u.id === usersData.currentUserId);
+      const currentUser = usersRes.data.users.find((u: User) => u.id === usersRes.data.currentUserId);
       setCurrentUserRole(currentUser?.role || "");
     } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        router.push("/todo");
+      }
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
@@ -75,7 +72,6 @@ export default function AdminPage() {
 
   // Start editing
   const startEdit = (user: User) => {
-    // Prevent editing superadmin
     if (user.role === "superadmin") {
       alert("SuperAdmin cannot be edited");
       return;
@@ -93,24 +89,19 @@ export default function AdminPage() {
   // Update user name
   const updateUserName = async (userId: string) => {
     try {
-      const res = await fetch("/api/admin/users", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, name: editName }),
-      });
-
-      if (res.ok) {
-        setUsers(users.map((u) => (u.id === userId ? { ...u, name: editName } : u)));
-        cancelEdit();
-      } else {
-        alert("Failed to update user");
-      }
+      await axios.patch("/api/admin/users", { userId, name: editName });
+      setUsers(users.map((u) => (u.id === userId ? { ...u, name: editName } : u)));
+      cancelEdit();
     } catch (error) {
-      alert("Error updating user");
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.error || "Failed to update user");
+      } else {
+        alert("Error updating user");
+      }
     }
   };
 
-  // Toggle user role (only superadmin can do this)
+  // Toggle user role
   const toggleUserRole = async (userId: string, currentRole: string) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
     
@@ -119,20 +110,37 @@ export default function AdminPage() {
     }
 
     try {
-      const res = await fetch("/api/admin/users/toggle-role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, newRole }),
-      });
-
-      if (res.ok) {
-        setUsers(users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
-      } else {
-        const data = await res.json();
-        alert(data.error || "Failed to change role");
-      }
+      await axios.post("/api/admin/users/toggle-role", { userId, newRole });
+      setUsers(users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
     } catch (error) {
-      alert("Error changing role");
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.error || "Failed to change role");
+      } else {
+        alert("Error changing role");
+      }
+    }
+  };
+
+  // Toggle ban status
+  const toggleBanUser = async (userId: string, currentBanStatus: boolean) => {
+    const action = currentBanStatus ? "unban" : "ban";
+    
+    if (!confirm(`Are you sure you want to ${action} this user?`)) {
+      return;
+    }
+
+    try {
+      await axios.post("/api/admin/users/toggle-ban", { 
+        userId, 
+        isBanned: !currentBanStatus 
+      });
+      setUsers(users.map((u) => (u.id === userId ? { ...u, is_banned: !currentBanStatus } : u)));
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.error || `Failed to ${action} user`);
+      } else {
+        alert(`Error ${action}ning user`);
+      }
     }
   };
 
@@ -143,21 +151,15 @@ export default function AdminPage() {
     }
 
     try {
-      const res = await fetch("/api/admin/users", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-
-      if (res.ok) {
-        setUsers(users.filter((u) => u.id !== userId));
-        setTodos(todos.filter((t) => t.user_id !== userId));
-      } else {
-        const data = await res.json();
-        alert(data.error || "Failed to delete user");
-      }
+      await axios.delete("/api/admin/users", { data: { userId } });
+      setUsers(users.filter((u) => u.id !== userId));
+      setTodos(todos.filter((t) => t.user_id !== userId));
     } catch (error) {
-      alert("Error deleting user");
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.error || "Failed to delete user");
+      } else {
+        alert("Error deleting user");
+      }
     }
   };
 
@@ -168,19 +170,14 @@ export default function AdminPage() {
     }
 
     try {
-      const res = await fetch("/api/admin/todos", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ todoId }),
-      });
-
-      if (res.ok) {
-        setTodos(todos.filter((t) => t.id !== todoId));
-      } else {
-        alert("Failed to delete todo");
-      }
+      await axios.delete("/api/admin/todos", { data: { todoId } });
+      setTodos(todos.filter((t) => t.id !== todoId));
     } catch (error) {
-      alert("Error deleting todo");
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.error || "Failed to delete todo");
+      } else {
+        alert("Error deleting todo");
+      }
     }
   };
 
@@ -224,7 +221,9 @@ export default function AdminPage() {
                   {users.map((user) => (
                     <div
                       key={user.id}
-                      className="flex items-center justify-between p-4 bg-white border rounded-lg hover:shadow-md transition"
+                      className={`flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition ${
+                        user.is_banned ? "bg-red-50" : "bg-white"
+                      }`}
                     >
                       <div className="flex-1">
                         {editingUserId === user.id ? (
@@ -257,6 +256,12 @@ export default function AdminPage() {
                               >
                                 {user.role}
                               </Badge>
+                              {user.is_banned && (
+                                <Badge variant="destructive">
+                                  <Ban className="w-3 h-3 mr-1" />
+                                  Banned
+                                </Badge>
+                              )}
                             </div>
                             <p className="text-sm text-gray-600">{user.email}</p>
                             <p className="text-xs text-gray-500 mt-1">
@@ -268,7 +273,6 @@ export default function AdminPage() {
 
                       {editingUserId !== user.id && user.role !== "superadmin" && (
                         <div className="flex gap-2">
-                          {/* Role Toggle - Only for SuperAdmin */}
                           {isSuperAdmin && (
                             <Button
                               size="sm"
@@ -289,6 +293,24 @@ export default function AdminPage() {
                             </Button>
                           )}
 
+                          <Button
+                            size="sm"
+                            variant={user.is_banned ? "default" : "outline"}
+                            onClick={() => toggleBanUser(user.id, user.is_banned)}
+                          >
+                            {user.is_banned ? (
+                              <>
+                                <Unlock className="w-4 h-4 mr-1" />
+                                Unban
+                              </>
+                            ) : (
+                              <>
+                                <Ban className="w-4 h-4 mr-1" />
+                                Ban
+                              </>
+                            )}
+                          </Button>
+
                           <Button size="sm" variant="outline" onClick={() => startEdit(user)}>
                             <Pencil className="w-4 h-4 mr-1" />
                             Edit
@@ -305,7 +327,6 @@ export default function AdminPage() {
                         </div>
                       )}
 
-                      {/* SuperAdmin badge - no actions */}
                       {user.role === "superadmin" && editingUserId !== user.id && (
                         <Badge variant="outline" className="text-xs text-gray-500">
                           🔒 Protected
