@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, User, Crown, Trash2, Plus, CheckCircle2, Circle } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 export default async function SuperAdminPage() {
   const supabase = await createSupabaseServerClient();
@@ -204,15 +205,16 @@ export default async function SuperAdminPage() {
           {/* My Todos Section */}
           <div className="lg:col-span-1">
             <Card className="border-2 border-green-200">
-              <CardHeader>
+              <Link href="/todo">Click here to Open Todo</Link>
+              {/* <CardHeader>
                 <CardTitle className="text-xl sm:text-2xl flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                   My Todos
                 </CardTitle>
-              </CardHeader>
+              </CardHeader> */}
               <CardContent>
                 {/* Add Todo Form */}
-                <form action={addTodo} className="mb-4">
+                {/* <form action={addTodo} className="mb-4">
                   <div className="flex gap-2">
                     <Input
                       type="text"
@@ -225,10 +227,10 @@ export default async function SuperAdminPage() {
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
-                </form>
+                </form> */}
 
                 {/* Todos List */}
-                <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                {/* <div className="space-y-2 max-h-[500px] overflow-y-auto">
                   {todos && todos.length > 0 ? (
                     todos.map((todo) => (
                       <div
@@ -280,7 +282,7 @@ export default async function SuperAdminPage() {
                       No todos yet. Add one above!
                     </p>
                   )}
-                </div>
+                </div> */}
               </CardContent>
             </Card>
           </div>

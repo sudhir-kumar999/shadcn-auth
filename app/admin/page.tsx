@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, X, Check, Loader2, Shield, User, Ban, Unlock } from "lucide-react";
+import Link from "next/link";
 
 type User = {
   id: string;
@@ -208,6 +209,7 @@ export default function AdminPage() {
           <TabsList className="mb-6">
             <TabsTrigger value="users">Users ({users.length})</TabsTrigger>
             <TabsTrigger value="todos">All Todos ({todos.length})</TabsTrigger>
+            <TabsTrigger value="todos"><Link href="/todo">Go to My Todos</Link></TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
