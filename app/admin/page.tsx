@@ -210,6 +210,8 @@ export default function AdminPage() {
             <TabsTrigger value="users">Users ({users.length})</TabsTrigger>
             <TabsTrigger value="todos">All Todos ({todos.length})</TabsTrigger>
             <TabsTrigger value="todos"><Link href="/todo">Go to My Todos</Link></TabsTrigger>
+            <TabsTrigger value=""><Link href="/dashboard/documents">Extract Text</Link></TabsTrigger>
+
           </TabsList>
 
           {/* Users Tab */}
