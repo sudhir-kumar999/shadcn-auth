@@ -5,7 +5,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, User, ListTodo, LogOut } from "lucide-react";
+// import { Mail, User, ListTodo, LogOut } from "lucide-react";
+import { Mail, User, ListTodo, LogOut, FileText } from "lucide-react";
+
 
 export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient();
@@ -92,24 +94,39 @@ export default async function DashboardPage() {
 
             {/* Quick Actions */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg">Quick Actions</h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Button asChild size="lg" className="h-auto py-4">
-                  <Link href="/todo" className="flex flex-col items-center gap-2">
-                    <ListTodo className="w-6 h-6" />
-                    <span className="text-sm sm:text-base">My Todos</span>
-                  </Link>
-                </Button>
+  <h3 className="font-semibold text-lg">Quick Actions</h3>
 
-                <Button asChild variant="outline" size="lg" className="h-auto py-4">
-                  <Link href="/api/auth/logout" className="flex flex-col items-center gap-2">
-                    <LogOut className="w-6 h-6" />
-                    <span className="text-sm sm:text-base">Logout</span>
-                  </Link>
-                </Button>
-              </div>
-            </div>
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <Button asChild size="lg" className="h-auto py-4">
+      <Link href="/todo" className="flex flex-col items-center gap-2">
+        <ListTodo className="w-6 h-6" />
+        <span className="text-sm sm:text-base">My Todos</span>
+      </Link>
+    </Button>
+
+    {/* ✅ NEW: Extracted Documents */}
+    <Button asChild size="lg" className="h-auto py-4">
+      <Link
+        href="/dashboard/documents"
+        className="flex flex-col items-center gap-2"
+      >
+        <FileText className="w-6 h-6" />
+        <span className="text-sm sm:text-base">Extracted Documents</span>
+      </Link>
+    </Button>
+
+    <Button asChild variant="outline" size="lg" className="h-auto py-4">
+      <Link
+        href="/api/auth/logout"
+        className="flex flex-col items-center gap-2"
+      >
+        <LogOut className="w-6 h-6" />
+        <span className="text-sm sm:text-base">Logout</span>
+      </Link>
+    </Button>
+  </div>
+</div>
+
 
             {/* Stats Card */}
             {/* <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4">

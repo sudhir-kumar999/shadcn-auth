@@ -67,6 +67,10 @@ export default async function Navbar() {
                   </DropdownMenuItem>
 
                   <DropdownMenuItem asChild>
+                    <Link href="/dashboard/documents">Extract Text</Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild>
                     <form action="/api/auth/logout" method="post">
                       <button className="w-full text-left">
                         Logout
