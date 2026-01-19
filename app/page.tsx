@@ -1,12 +1,27 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Sparkles, Shield, Zap } from "lucide-react";
+import { createSupabaseServerClient } from "@/lib/supabase/server"; // ✅ IMPORTANT
 
-export default function Home() {
+export default async function Home() {
+  // 🔐 AUTH CHECK
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // ✅ Agar user logged in hai → dashboard
+  if (user) {
+    redirect("/dashboard");
+  }
+
+  // ❌ Agar logged in nahi hai → same landing page
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-black dark:to-zinc-900 p-4">
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+        
         {/* Left Side - Hero Content */}
         <div className="space-y-6 text-center lg:text-left order-2 lg:order-1">
           <div className="inline-block">
@@ -15,11 +30,11 @@ export default function Home() {
               Welcome to Your App
             </span>
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent">
             Manage Your Tasks Efficiently
           </h1>
-          
+
           <p className="text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0">
             A powerful and intuitive platform to organize your work, collaborate with your team, and boost productivity.
           </p>
@@ -74,47 +89,17 @@ export default function Home() {
             </CardHeader>
 
             <CardContent className="flex flex-col gap-4 pt-2">
-              {/* Login Button */}
               <Link href="/auth/login" className="w-full">
                 <Button className="w-full h-11 text-base font-semibold">
                   Login
                 </Button>
               </Link>
 
-              {/* Signup Button */}
               <Link href="/auth/signup" className="w-full">
                 <Button variant="outline" className="w-full h-11 text-base font-semibold">
                   Sign Up
                 </Button>
               </Link>
-
-              {/* Divider */}
-              <div className="relative py-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Secure Authentication
-                  </span>
-                </div>
-              </div>
-
-              {/* Trust Badges */}
-              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Shield className="w-3 h-3" />
-                  <span>Encrypted</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>Safe</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Zap className="w-3 h-3" />
-                  <span>Fast</span>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
