@@ -206,6 +206,8 @@ export default async function SuperAdminPage() {
           <div className="lg:col-span-1">
             <Card className="border-2 border-green-200">
               <Link href="/todo" className="flex justify-center items-center text-2xl font bold bg-black text-white border m-2">My Todo</Link>
+              <Link href="/dashboard/documents" className="flex justify-center items-center text-2xl font bold bg-black text-white border m-2">Extract Text</Link>
+
               {/* <CardHeader>
                 <CardTitle className="text-xl sm:text-2xl flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
